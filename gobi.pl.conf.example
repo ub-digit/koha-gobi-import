@@ -1,0 +1,8 @@
+log4perl_conf=log4perl.conf
+
+[fetchgobi]
+marc_file_prefixes=20,20,22
+ftp_username=username
+ftp_password=password
+ftp_host=ftp.example.com
+ftp_remote_dir=ecat

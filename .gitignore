@@ -1,0 +1,5 @@
+log/*.log
+*.mrc
+*.err
+*.conf
+todo
