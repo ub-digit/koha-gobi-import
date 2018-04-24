@@ -1,0 +1,40 @@
+log4perl.logger=INFO, Screen, Email, LogFile, ErrFile
+log4perl.logger.Gobi.MailNotify=DEBUG, EmailReport
+
+log4perl.appender.EmailReport=GUB::MIMEMailSender
+log4perl.appender.EmailReport.from=noreply@example.com
+log4perl.appender.EmailReport.to=example@example.com
+log4perl.appender.EmailReport.subject=GOBI REPORT
+log4perl.appender.EmailReport.smtp_host=smtp.example.com
+log4perl.appender.EmailReport.smtp_port=25
+log4perl.appender.EmailReport.layout=Log::Log4perl::Layout::PatternLayout
+log4perl.appender.EmailReport.layout.ConversionPattern=%m
+
+log4perl.appender.Email=GUB::MIMEMailSender
+log4perl.appender.Email.from=noreply@example.com
+log4perl.appender.Email.to=example@example.com
+log4perl.appender.Email.subject=GOBI ERROR
+log4perl.appender.Email.smtp_host=smtp.example.com
+log4perl.appender.Email.smtp_port=25
+log4perl.appender.Email.Threshold=ERROR
+log4perl.appender.Email.layout=Log::Log4perl::Layout::SimpleLayout
+
+log4perl.appender.Screen=Log::Log4perl::Appender::Screen
+log4perl.appender.Screen.stderr=1
+log4perl.appender.Screen.Threshold=FATAL
+log4perl.appender.Screen.layout=Log::Log4perl::Layout::SimpleLayout
+
+file_layout_pattern = %d %p %c %m%n
+
+log4perl.appender.LogFile=Log::Log4perl::Appender::File
+log4perl.appender.LogFile.filename=log/gobi.log
+log4perl.appender.LogFile.mode=append
+log4perl.appender.LogFile.layout=Log::Log4perl::Layout::PatternLayout
+log4perl.appender.LogFile.layout.ConversionPattern=${file_layout_pattern}
+
+log4perl.appender.ErrFile=Log::Log4perl::Appender::File
+log4perl.appender.ErrFile.filename=log/gobi-errors.log
+log4perl.appender.ErrFile.mode=append
+log4perl.appender.ErrFile.Threshold=ERROR
+log4perl.appender.ErrFile.layout=Log::Log4perl::Layout::PatternLayout
+log4perl.appender.ErrFile.layout.ConversionPattern=${file_layout_pattern}

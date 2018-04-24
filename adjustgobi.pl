@@ -7,6 +7,7 @@ use MARC::Batch;
 use MARC::Record;
 
 use Log::Log4perl;
+use Log::Log4perl::MDC;
 use Getopt::Long;
 use Config::Tiny;
 
@@ -15,6 +16,7 @@ my $config = Config::Tiny->read('gobi.pl.conf', 'utf8');
 Log::Log4perl::init($config->{_}->{log4perl_config} || 'log4perl.conf');
 
 my $logger = Log::Log4perl->get_logger('Gobi.adjustgobi');
+my $mail_report_logger = Log::Log4perl->get_logger('Gobi.MailNotify');
 
 $config = $config->{adjustgobi};
 
@@ -29,6 +31,8 @@ open(my $input_fh, "<", $input_file) or $logger->logdie("Could not open $input_f
 my $batch;
 eval { $batch = MARC::Batch->new('USMARC', $input_fh) };
 $logger->logdie("Could not read marc from $input_file: $@") if $@;
+
+my @records_formatted;
 
 my $record_count = 0;
 while (1) {
@@ -248,9 +252,14 @@ while (1) {
             $record->delete_fields($field_020);
         }
     }
+    push @records_formatted, "Record# $record_count:", $record->as_formatted(), "\n";
 
     # Write record
     print $output_fh $record->as_usmarc();
 }
 close($output_fh);
 close($input_fh);
+
+Log::Log4perl::MDC->put('attachment', $output_file);
+Log::Log4perl::MDC->put('attachment-mime-type', 'application/marc');
+$mail_report_logger->debug("\n" . join("\n", @records_formatted));
