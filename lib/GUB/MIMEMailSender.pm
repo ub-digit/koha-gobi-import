@@ -2,7 +2,7 @@ package GUB::MIMEMailSender;
 
 use Modern::Perl;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 # use Log::Dispatch::Types;
 
@@ -17,8 +17,7 @@ use Email::Sender::Simple;
 use Email::Sender::Transport::SMTP;
 use File::Basename;
 use IO::All;
-
-use Log::Log4perl::MDC; # Need use?
+use Log::Log4perl::MDC;
 
 # use Try::Tiny;
 
@@ -58,47 +57,49 @@ sub send_email {
     my $self = shift;
     my %p = @_;
 
-    my $header = [
+    my @header = (
         'To' => ( join ',', @{$self->{to}} ),
-        'From' => $self->{from} || 'GUBMailSender@ub.gu.se',
-    ];
+        'From' => ($self->{from} || 'GUBMailSender@ub.gu.se'),
+    );
 
-    push @{$header}, 'Subject' => $self->{subject} if $self->{subject};
-    push @{$header}, 'Reply-To' => $self->{reply_to} if $self->{reply_to};
-    push @{$header}, 'cc' => $self->{cc} if $self->{cc};
+    push @header, 'Subject' => $self->{subject} if $self->{subject};
+    push @header, 'Reply-To' => $self->{reply_to} if $self->{reply_to};
+    push @header, 'cc' => $self->{cc} if $self->{cc};
 
     # Quick and dirty, only support one attachment of type
     # text/plain
     # TODO: Would be quite easy to autodetect mime and support multiple files
+    #
 
     my $mail;
     my $attachment = Log::Log4perl::MDC->get('attachment');
-
     if ($attachment) {
+        my $type = Log::Log4perl::MDC->get('attachment-mime-type') || 'text/plain';
         # TODO: Should have some more validation
         # that attachment is a path and file exists
         # plus we take this from the context thingy, not class param
         my ($filename) = fileparse($attachment);
         $mail = Email::MIME->create(
-            header => $header, # header/header_str/header_raw, wtf?
+            header => \@header,
             parts => [
                 Email::MIME->create(
-                    'body' => %p{message},
+                    'body' => $p{message},
                 ),
                 Email::MIME->create(
                     attributes => {
                         filename => $filename,
-                        content_type => 'text/plain',
+                        name => $filename, #??
+                        content_type => $type,
+                        encoding => 'base64', #??
                     },
-                    body => io($attachment),
-                    # body => io( "2004-financials.pdf" )->binary->all, # ????
+                    body => io($attachment)->binary->all,
                 ),
             ]
         );
     }
     else {
         $mail = Email::Simple->create(
-            header => $header,
+            header => \@header,
             body => $p{message},
         );
     }
