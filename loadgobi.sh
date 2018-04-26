@@ -48,13 +48,14 @@ done
 # Load
 for filepath in $(find "$bulkmarcimport_in_dir" -name '*.mrc' | sort); do
   filename=$(basename "$filepath")
-  errors=$($koha_shell -c cd\ $koha_path/misc/migration_tools\ \&\&\ ./bulkmarcimport.pl\ -b\ -file\ \"$filepath\"\ -insert\ -c\=MARC21\ -tomarcplugin\ \"Koha::Plugin::Se::Ub::Gu::MarcImport\" $koha_instance 2>&1 >/dev/null)
+  output=$($koha_shell -c cd\ $koha_path/misc/migration_tools\ \&\&\ ./bulkmarcimport.pl\ -b\ -file\ \"$filepath\"\ -l\ \"$script_dir/log/bulkmarcimport.log\"\ -append\ "$bulkmarcimport_options" $koha_instance 2>&1)
   if [ $? -eq 0 ]; then
     log_info "bulkmarcimport successfully processed \"$filename\""
+    log_info "bulkmarcimport output: \"$output\""
     mv "$filepath" "$done_dir/"
   else
     log_error "bulkmarcimport on file \"$bulkmarcimport_err_dir/$filename\" failed with exit status $?"
     mv "$filepath" "$bulkmarcimport_err_dir/$filename"
-    echo "$errors" > "$bulkmarcimport_err_dir/${filename}.err"
+    echo "$output" > "$bulkmarcimport_err_dir/${filename}.err"
   fi
 done

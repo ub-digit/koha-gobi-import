@@ -1,5 +1,4 @@
 koha_user="koha"
 koha_path="/path/to/koha/root"
 koha_instance="koha"
-bulkmarcimport_to_marc_plugin="Koha::Plugin::Se::Ub::Gu::MarcImport"
-bulkmarcimport_match="system-control-number.raw,035a"
+bulkmarcimport_options="-insert -c=MARC21 -tomarcplugin \"Koha::Plugin::Se::Ub::Gu::MarcImport\""
