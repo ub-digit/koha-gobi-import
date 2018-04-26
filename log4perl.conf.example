@@ -1,5 +1,6 @@
 log4perl.logger.Gobi=INFO, Screen, GobiEmail, GobiLogFile, GobiErrFile
 log4perl.logger.Gobi.MailNotify=DEBUG, GobiEmailReport
+log4perl.additivity.Gobi.MailNotify.Subcat=0
 
 log4perl.appender.GobiEmailReport=GUB::MIMEMailSender
 log4perl.appender.GobiEmailReport.from=noreply@example.com
