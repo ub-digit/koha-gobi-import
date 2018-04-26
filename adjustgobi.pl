@@ -2,6 +2,7 @@
 
 use Modern::Perl;
 use lib 'lib';
+use utf8;
 
 use MARC::Batch;
 use MARC::Record;
@@ -69,7 +70,7 @@ while (1) {
     ## if we don't have a field 041 add it
     if (!$f041) {
         my $lng = substr($data, 35, 3);
-        $record->append_fields(MARC::Field->new('041', '', '', a => $lng));
+        $record->insert_fields_ordered(MARC::Field->new('041', ' ', ' ', a => $lng));
     }
 
     ## Delete fields
@@ -113,20 +114,14 @@ while (1) {
     }
 
     my $f960 = $record->field('960');
-
     if ($f960) {
         my $hylla;
         my $f960u = $f960->subfield('u');
         if ($f960u) {
-            if ($f960u =~ /ursbok$/) {
-                $hylla = "Kursbok";
-            }
-            else {
-                $hylla = "GOBI";
-            }
+            my $hylla = $f960u =~ /ursbok$/ ? 'Kursbok' : 'GOBI';
             my $f852 = $record->field('852');
             if (!$f852) {
-                $record->append_fields(MARC::Field->new('852', '', '', b => 'Gdig', h => $hylla));
+                $record->insert_fields_ordered(MARC::Field->new('852', ' ', ' ', b => 'Gdig', h => $hylla));
             }
         }
     }
@@ -225,12 +220,6 @@ while (1) {
     } # end 776
 
     # add ez to 856 u missing ez add zText and add lic info from 590 to 856 z
-    my $field_590 = $record->field('590');
-    my $license;
-    if ($field_590) {
-        $license = $field_590->as_string('a');
-    }
-
     my $zText = 'Tillgänglig för Göteborgs universitet / Online access for the University of Gothenburg';
     my $field_856 = $record->field('856');
     if ($field_856) {
@@ -238,10 +227,15 @@ while (1) {
         my $url = $sub_u;
         my $ezproxy_url = 'http://ezproxy.ub.gu.se/login?url=';
         unless ($url =~ /^http:\/\/ezproxy/) {
-            $field_856->update( 'u' => $ezproxy_url.$url );
+            $field_856->update( 'u' => $ezproxy_url . $url );
         }
         $field_856->add_subfields( 'z' => $zText );
-        $field_856->add_subfields( 'z' => '-- '.$license );
+
+        my $field_590 = $record->field('590');
+        if ($field_590) {
+            my $license = $field_590->as_string('a');
+            $field_856->add_subfields('z' => "-- $license");
+        }
     }
 
     # ok 20170905
@@ -255,6 +249,7 @@ while (1) {
     push @records_formatted, "Record# $record_count:", $record->as_formatted(), "\n";
 
     # Write record
+    $record->encoding('UTF-8'); # TODO: This is probably not needed
     print $output_fh $record->as_usmarc();
 }
 close($output_fh);
