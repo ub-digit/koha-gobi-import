@@ -27,6 +27,9 @@ GetOptions(
     'output-file=s' => \$output_file,
 );
 
+die("--input-file is required") unless ($input_file);
+die("--output-file is required") unless ($output_file);
+
 open(my $output_fh, ">", $output_file) or $logger->logdie("Could not open $output_file for write: $!");
 open(my $input_fh, "<", $input_file) or $logger->logdie("Could not open $input_file: $!");
 my $batch;
