@@ -1,14 +1,15 @@
 #!/usr/bin/perl
 
 use Modern::Perl;
-use lib 'lib';
+
+use File::Spec::Functions; # catfile
+use File::Basename;
+use lib dirname(__FILE__) . '/lib';
 
 use Net::FTP;
 use URI::Escape;
 use POSIX qw(strftime);
 use MARC::Batch;
-use File::Spec::Functions;
-use File::Basename;
 use Log::Log4perl;
 use Log::Log4perl::MDC;
 use Getopt::Long;
@@ -17,9 +18,9 @@ use utf8;
 
 my $script_dir = dirname(__FILE__);
 my $script_name = $0;
-my $config = Config::Tiny->read('gobi.pl.conf', 'utf8');
+my $config = Config::Tiny->read(catfile($script_dir, 'gobi.pl.conf'), 'utf8');
 
-Log::Log4perl::init($config->{_}->{log4perl_config} || 'log4perl.conf');
+Log::Log4perl::init($config->{_}->{log4perl_config} || catfile($script_dir, 'log4perl.conf'));
 my $logger = Log::Log4perl->get_logger('Gobi.fetchgobi');
 
 $config = $config->{fetchgobi};
