@@ -14,22 +14,22 @@ use Config::Tiny;
 # TODO: Could also support mail attachment?
 my (
     $level,
-    $message,
     $logger_ns,
     $attachment,
     $attachment_mime_type
 );
 GetOptions(
     'level=s' => \$level,
-    'message=s' => \$message,
     'logger=s' => \$logger_ns,
     'attachment=s' => \$attachment,
     'attachment-mime-type=s' => \$attachment_mime_type,
 );
 
+my $message = do { local $/; <STDIN> };
+
 die('--level required') unless $level;
-die('--message required') unless $message;
 die('--logger required') unless $logger_ns;
+die('STDIN message required') unless $message;
 
 my %levels = (
     trace => $TRACE,

@@ -19,11 +19,11 @@ koha_shell="$script_dir/koha-shell"
 logger="$script_dir/logger.pl"
 
 function log_error {
-  $logger --level=error --message="$1" --logger="Gobi.loadgobi"
+  echo "$1" | $logger --level=error --logger=Gobi.loadgobi
 }
 
 function log_info {
-  $logger --level=info  --message="$1" --logger="Gobi.loadgobi"
+  echo "$1" | $logger --level=info --logger=Gobi.loadgobi
 }
 
 file_date_today=$(date +"%y%m%d")
