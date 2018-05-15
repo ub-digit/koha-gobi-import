@@ -36,7 +36,7 @@ for filepath in $(find "$adjustgobi_in_dir" -name '*.mrc' | sort); do
   filename=$(basename "$filepath")
   errors=$($adjustgobi --input-file="$filepath" --output-file="$bulkmarcimport_in_dir/$filename" 2>&1 >/dev/null)
   if [ $? -eq 0 ]; then
-    log_info "ajustgobi successfully processed \"$filename\""
+    log_info "adjustgobi successfully processed \"$filename\""
     mv "$filepath" "$adjustgobi_in_archive_dir/"
   else
     mv "$filepath" "$adjustgobi_err_dir/"
