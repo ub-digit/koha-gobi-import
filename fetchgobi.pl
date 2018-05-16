@@ -25,74 +25,69 @@ my $logger = Log::Log4perl->get_logger('Gobi.fetchgobi');
 
 $config = $config->{fetchgobi};
 
-my ($file_date, $local_directory);
-GetOptions(
-    'file-date=s' => \$file_date,
-    'local-directory=s' => \$local_directory,
+my (
+    $file_date,
+    $local_directory,
+    $ftp_remote_dir,
+    $file_pattern_string,
+    $skip_files,
+    $ftp_host,
+    $ftp_username,
+    $ftp_password,
 );
 
-die('--file-date required') unless $file_date;
-die('--local-directory required') unless $local_directory;
+GetOptions(
+    'local-directory=s' => \$local_directory,
+    'remote-directory=s' => \$ftp_remote_dir,
+    'file-pattern=s' => \$file_pattern_string,
+    'skip-files=s' => \$skip_files,
+    'host=s' => \$ftp_host,
+    'user=s' => \$ftp_username,
+    'password=s' => \$ftp_password,
+);
 
-my $retry_dir = catfile($script_dir, 'fetchgobi_retry');
+die('--local-directory required') unless $local_directory;
+die('--host required') unless $ftp_host;
+die('--user required') unless $ftp_username;
+die('--password required') unless $ftp_password;
+
+$file_pattern_string ||= '\.mrc$';
+my %skip_files = map { $_ => undef } split(/\s*(?:,|\s+)\s*/, $skip_files);
 
 $logger->info("$script_name started");
 
-opendir(D, $retry_dir) or $logger->logdie("Can't open directory: $!");
-my @file_dates_retry = grep(/^\d{6}$/, readdir(D));
-closedir(D);
-
-$logger->warn(
-    "Found file dates that will be attempted again: ",
-    join(', ', @file_dates_retry)
-) if @file_dates_retry;
-
-# Start poor man's transfer-transaction
-{
-    my $retry_file = catfile($retry_dir, $file_date);
-    my $status = system("touch $retry_file");
-    $logger->logdie("Unable to touch $retry_file") if $status;
-}
-
 # Start FTP: connect and login
-my $ftp = Net::FTP->new($config->{ftp_host})
+my $ftp = Net::FTP->new($ftp_host)
     or $logger->logdie("FTP: Can't connect: $@");
 
-$ftp->login($config->{ftp_username}, $config->{ftp_password})
+$ftp->login($ftp_username, $ftp_password)
     or $logger->logdie("FTP: Can't login");
 
 # Change directory
-$ftp->cwd($config->{ftp_remote_dir})
-    or $logger->logdie("FTP: Can't change dir to " . $config->{ftp_remote_dir});
+$ftp->cwd($ftp_remote_dir)
+    or $logger->logdie("FTP: Can't change dir to " . $ftp_remote_dir);
 
 # Get a listing of files
 my @files = $ftp->ls()
-    or $logger->logdie("No files available on remote server: " . $config->{ftp_host});
+    or $logger->logdie("No files available on remote server: " . $ftp_host);
 
-$logger->logdie("No files on remote server: " . $config->{ftp_host}) unless (@files);
+$logger->logdie("No files on remote server: " . $ftp_host) unless (@files);
 
 # Specify a binary tranfer
 $ftp->binary() or $logger->logdie("FTP: Can't specify binary type");
 
-my @file_dates = (@file_dates_retry, $file_date);
+my $file_pattern = qr/$file_pattern_string/;
 
-my $file_prefixes_p = join('|', split(/\s*,\s*/, $config->{marc_file_prefixes}));
-my %file_date_regexps = map { $_ => qr/^(?:$file_prefixes_p)$_\.mrc$/ } @file_dates;
-
-FILE_DATE: foreach my $_file_date (keys %file_date_regexps) {
-    foreach my $marc_file (grep { $_ =~ $file_date_regexps{$_file_date} } @files) {
-        if ($ftp->get($marc_file, catfile($local_directory, $marc_file))) {
-            $logger->info("Downloaded: $marc_file");
-        }
-        else {
-            # @TODO: How to get error message from ftp?
-            $logger->error("FTP: Problem downloading $marc_file from " . $config->{ftp_host});
-            next FILE_DATE;
-        }
+foreach my $marc_file (grep { $_ =~ $file_pattern && !(exists $skip_files{$_}) } @files) {
+    if ($ftp->get($marc_file, catfile($local_directory, $marc_file))) {
+        $logger->info("Downloaded: $marc_file");
     }
-    my $retry_file = catfile($retry_dir, $_file_date);
-    # Complete poor man's transfer transaction
-    unlink $retry_file or $logger->logdie("Unable to remove $retry_file: $!");
+    else {
+        # @TODO: How to get error message from ftp?
+        $logger->error("FTP: Problem downloading $marc_file from " . $config->{ftp_host});
+        next;
+    }
 }
+
 $ftp->quit();
 $logger->info("$script_name finished");

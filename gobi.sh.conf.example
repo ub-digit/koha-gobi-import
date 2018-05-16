@@ -1,3 +1,9 @@
+ftp_marc_file_pattern='^2[012]\d+\.mrc$'
+ftp_user="username"
+ftp_password="password"
+ftp_host="ftp.ybp.com"
+ftp_remote_directory="ecat"
+
 koha_user="koha"
 koha_path="/path/to/koha/root"
 koha_instance="koha"
