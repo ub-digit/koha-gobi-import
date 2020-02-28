@@ -38,7 +38,7 @@ $fetchgobi \
   --password="$ftp_password"\
   --file-pattern="$ftp_marc_file_pattern"
 
-cp "$adjustgobi_in_dir"/* "$fetchgobi_done_dir"/
+cp "$adjustgobi_in_dir"/* "$fetchgobi_done_dir"/ 2>/dev/null
 
 # Adjust
 for filepath in $(find "$adjustgobi_in_dir" -name '*.mrc' | sort); do
