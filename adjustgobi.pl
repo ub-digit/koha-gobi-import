@@ -122,19 +122,6 @@ while (1) {
         $field_040->add_subfields('d' => 'Gdig');
     }
 
-    my $f960 = $record->field('960');
-    if ($f960) {
-        my $hylla;
-        my $f960u = $f960->subfield('u');
-        if ($f960u) {
-            my $hylla = $f960u =~ /ursbok$/ ? 'Kursbok' : 'GOBI';
-            my $f852 = $record->field('852');
-            if (!$f852) {
-                $record->insert_fields_ordered(MARC::Field->new('852', ' ', ' ', b => 'Gdig', h => $hylla));
-            }
-        }
-    }
-
     # Elektronisk resurs
     my $f245 = $record->field('245');
     if ($f245) {
@@ -233,11 +220,6 @@ while (1) {
     my $field_856 = $record->field('856');
     if ($field_856) {
         my $sub_u = $field_856->subfield('u');
-        my $url = $sub_u;
-        my $ezproxy_url = 'http://ezproxy.ub.gu.se/login?url=';
-        unless ($url =~ /^http:\/\/ezproxy/) {
-            $field_856->update( 'u' => $ezproxy_url . $url );
-        }
         $field_856->add_subfields( 'z' => $zText );
 
         my $field_590 = $record->field('590');
