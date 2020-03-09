@@ -9,6 +9,7 @@ use lib dirname(__FILE__) . '/lib';
 
 use MARC::Batch;
 use MARC::Record;
+use MARC::Charset qw(marc8_to_utf8);
 
 use Log::Log4perl;
 use Log::Log4perl::MDC;
@@ -63,6 +64,8 @@ while (1) {
             last;
         }
     }
+
+    convert_record_to_utf8($record);
 
     my $field;
     my @fields;
@@ -239,8 +242,6 @@ while (1) {
     }
     push @records_formatted, "Record# $record_count:", $record->as_formatted(), "\n";
 
-    # Write record
-    $record->encoding('UTF-8'); # TODO: This is probably not needed
     print $output_fh $record->as_usmarc();
 }
 close($output_fh);
@@ -249,3 +250,29 @@ close($input_fh);
 Log::Log4perl::MDC->put('attachment', $output_file);
 Log::Log4perl::MDC->put('attachment-mime-type', 'application/marc');
 $mail_report_logger->debug("\n" . join("\n", @records_formatted));
+
+
+sub convert_record_to_utf8 {
+    my ($record) = @_;
+
+    if ($record->encoding() eq 'MARC-8') {
+
+        # convert contents of variable data subfields from MARC8 to UTF8
+        foreach my $field ($record->fields()) {
+            unless ($field->is_control_field()) {
+                my @converted_sfs = ();
+                foreach my $sf ($field->subfields()) {
+                    $sf->[1] = marc8_to_utf8($sf->[1]);
+                    push @converted_sfs, @$sf;
+                }
+                $field->replace_with(MARC::Field->new(
+                    $field->tag(),
+                    $field->indicator(1),
+                    $field->indicator(2),
+                    @converted_sfs
+                ));
+            }
+        }
+    }
+    $record->encoding('UTF-8')
+}
