@@ -84,7 +84,7 @@ foreach my $marc_file (grep { $_ =~ $file_pattern && !(exists $skip_files{$_}) }
     }
     else {
         # @TODO: How to get error message from ftp?
-        $logger->error("FTP: Problem downloading $marc_file from " . $config->{ftp_host});
+        $logger->error("FTP: Problem downloading $marc_file from " . $ftp_host);
         next;
     }
 }

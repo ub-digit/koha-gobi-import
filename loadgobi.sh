@@ -2,15 +2,17 @@
 script_dir="$(dirname "$(readlink -f "$0")")"
 source "$script_dir/gobi.sh.conf"
 
-fetchgobi_done_dir="$script_dir/fetchgobi_done"
+fetchgobi_data_dir="/opt/gobi"
 
-adjustgobi_in_dir="$script_dir/adjustgobi_in"
-adjustgobi_err_dir="$script_dir/adjustgobi_err"
+fetchgobi_done_dir="$fetchgobi_data_dir/fetchgobi_done"
 
-bulkmarcimport_in_dir="$script_dir/bulkmarcimport_in"
-bulkmarcimport_err_dir="$script_dir/bulkmarcimport_err"
+adjustgobi_in_dir="$fetchgobi_data_dir/adjustgobi_in"
+adjustgobi_err_dir="$fetchgobi_data_dir/adjustgobi_err"
 
-done_dir="$script_dir/done"
+bulkmarcimport_in_dir="$fetchgobi_data_dir/bulkmarcimport_in"
+bulkmarcimport_err_dir="$fetchgobi_data_dir/bulkmarcimport_err"
+
+done_dir="$fetchgobi_data_dir/done"
 
 # Paths to executables
 fetchgobi="$script_dir/fetchgobi.pl"
@@ -57,7 +59,7 @@ done
 # Load
 for filepath in $(find "$bulkmarcimport_in_dir" -name '*.mrc' | sort); do
   filename=$(basename "$filepath")
-  output=$($koha_shell -c cd\ $koha_path/misc/migration_tools\ \&\&\ ./bulkmarcimport.pl\ -b\ -file\ \"$filepath\"\ -l\ \"$script_dir/log/bulkmarcimport.log\"\ -append\ "$bulkmarcimport_options" $koha_instance 2>&1)
+  output=$($koha_shell -c cd\ $koha_path/misc/migration_tools\ \&\&\ ./bulkmarcimport.pl\ -b\ -file\ \"$filepath\"\ -l\ \"$fetchgobi_data_dir/log/bulkmarcimport.log\"\ -append\ "$bulkmarcimport_options" $koha_instance 2>&1)
   if [ $? -eq 0 ]; then
     log_info "bulkmarcimport successfully processed \"$filename\""
     log_info "bulkmarcimport output: \"$output\""
