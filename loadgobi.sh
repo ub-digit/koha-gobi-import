@@ -43,14 +43,16 @@ $fetchgobi \
   --host="$ftp_host"\
   --user="$ftp_user"\
   --password="$ftp_password"\
-  --file-pattern="$ftp_marc_file_pattern"
+  --file-pattern="$ftp_marc_file_pattern"\
+  --log4perl-conf="$log4perl_conf"
+
 
 cp "$adjustgobi_in_dir"/* "$fetchgobi_done_dir"/ 2>/dev/null
 
 # Adjust
 for filepath in $(find "$adjustgobi_in_dir" -name '*.mrc' | sort); do
   filename=$(basename "$filepath")
-  errors=$($adjustgobi --input-file="$filepath" --output-file="$bulkmarcimport_in_dir/$filename" 2>&1 >/dev/null)
+  errors=$($adjustgobi --input-file="$filepath" --output-file="$bulkmarcimport_in_dir/$filename" --log4perl-conf="$log4perl_conf" 2>&1 >/dev/null)
   if [ $? -eq 0 ]; then
     log_info "adjustgobi successfully processed \"$filename\""
     rm "$filepath"

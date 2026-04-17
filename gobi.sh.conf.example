@@ -10,3 +10,4 @@ koha_instance="koha"
 bulkmarcimport_options="-insert -c=MARC21 -tomarcplugin \"Koha::Plugin::Se::Ub::Gu::MarcImport\""
 
 fetchgobi_data_dir="/opt/gobi"
+log4perl_conf="/opt/gobi/log4perl.conf"

@@ -14,26 +14,22 @@ use MARC::Charset qw(marc8_to_utf8);
 use Log::Log4perl;
 use Log::Log4perl::MDC;
 use Getopt::Long;
-use Config::Tiny;
-
-my $script_dir = dirname(__FILE__);
-my $config = Config::Tiny->read(catfile($script_dir, 'gobi.pl.conf'), 'utf8');
-
-Log::Log4perl::init($config->{_}->{log4perl_config} || catfile($script_dir, 'log4perl.conf'));
-
-my $logger = Log::Log4perl->get_logger('Gobi.adjustgobi');
-my $mail_report_logger = Log::Log4perl->get_logger('Gobi.MailNotify');
-
-$config = $config->{adjustgobi};
 
 my ($input_file, $output_file);
 GetOptions(
     'input-file=s' => \$input_file,
     'output-file=s' => \$output_file,
+    'log4perl-conf' => \$log4perl_conf,
 );
 
-die("--input-file is required") unless ($input_file);
-die("--output-file is required") unless ($output_file);
+die("--input-file is required") unless $input_file;
+die("--output-file is required") unless $output_file;
+die('--log4perl-conf required') unless $log4perl_conf;
+
+Log::Log4perl::init($log4perl_conf);
+
+my $logger = Log::Log4perl->get_logger('Gobi.adjustgobi');
+my $mail_report_logger = Log::Log4perl->get_logger('Gobi.MailNotify');
 
 open(my $output_fh, ">", $output_file) or $logger->logdie("Could not open $output_file for write: $!");
 open(my $input_fh, "<", $input_file) or $logger->logdie("Could not open $input_file: $!");

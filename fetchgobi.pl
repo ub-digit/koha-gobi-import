@@ -13,17 +13,10 @@ use MARC::Batch;
 use Log::Log4perl;
 use Log::Log4perl::MDC;
 use Getopt::Long;
-use Config::Tiny;
 use utf8;
 
 my $script_dir = dirname(__FILE__);
 my $script_name = $0;
-my $config = Config::Tiny->read(catfile($script_dir, 'gobi.pl.conf'), 'utf8');
-
-Log::Log4perl::init($config->{_}->{log4perl_config} || catfile($script_dir, 'log4perl.conf'));
-my $logger = Log::Log4perl->get_logger('Gobi.fetchgobi');
-
-$config = $config->{fetchgobi};
 
 my (
     $file_date,
@@ -44,12 +37,17 @@ GetOptions(
     'host=s' => \$ftp_host,
     'user=s' => \$ftp_username,
     'password=s' => \$ftp_password,
+    'log4perl-conf' => \$log4perl_conf,
 );
 
 die('--local-directory required') unless $local_directory;
 die('--host required') unless $ftp_host;
 die('--user required') unless $ftp_username;
 die('--password required') unless $ftp_password;
+die('--log4perl-conf required') unless $log4perl_conf;
+
+Log::Log4perl::init($log4perl_conf);
+my $logger = Log::Log4perl->get_logger('Gobi.fetchgobi');
 
 $file_pattern_string ||= '\.mrc$';
 my %skip_files = map { $_ => undef } split(/\s*(?:,|\s+)\s*/, $skip_files);
