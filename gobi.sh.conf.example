@@ -8,3 +8,5 @@ koha_user="koha"
 koha_path="/path/to/koha/root"
 koha_instance="koha"
 bulkmarcimport_options="-insert -c=MARC21 -tomarcplugin \"Koha::Plugin::Se::Ub::Gu::MarcImport\""
+
+fetchgobi_data_dir="/opt/gobi"

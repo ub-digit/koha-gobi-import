@@ -1,8 +1,13 @@
 #!/bin/bash
 script_dir="$(dirname "$(readlink -f "$0")")"
-source "$script_dir/gobi.sh.conf"
 
-fetchgobi_data_dir="/opt/gobi"
+if [ -z "$1" ]; then
+  conf_file="$script_dir/gobi.sh.conf"
+else
+  conf_file="$1"
+fi
+
+source "$conf_file"
 
 fetchgobi_done_dir="$fetchgobi_data_dir/fetchgobi_done"
 
