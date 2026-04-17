@@ -2,7 +2,7 @@
 script_dir="$(dirname "$(readlink -f "$0")")"
 
 if [ -z "$1" ]; then
-  conf_file="$script_dir/gobi.sh.conf"
+  conf_file="$script_dir/loadgobi.sh.conf"
 else
   conf_file="$1"
 fi
